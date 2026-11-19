@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: po-assistant-db
+    environment:
+      POSTGRES_USER: po_app
+      POSTGRES_PASSWORD: po_app_password
+      POSTGRES_DB: po_assistant
+    # Host port 5433 so it doesn't clash with a locally installed Postgres on 5432.
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U po_app -d po_assistant"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:
