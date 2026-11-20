@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/priyank8141/purchase-order-ai-assistant#readme",
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.10.0",
     "dotenv": "^18.0.10",
     "drizzle-orm": "^0.45.4",
     "pg": "^8.23.1",

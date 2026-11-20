@@ -1,7 +1,13 @@
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { Pool, types } from "pg";
 import { databaseUrl, readonlyDatabaseUrl } from "../config";
 import * as schema from "./schema";
+
+// Keep DATE columns as "YYYY-MM-DD" strings. The default parses them into JS
+// Dates at local midnight, which shifts days across timezones.
+types.setTypeParser(types.builtins.DATE, (v) => v);
+// COUNT(*) and bigint sums come back as int8. Demo values fit safely in a JS number.
+types.setTypeParser(types.builtins.INT8, (v) => Number(v));
 
 /**
  * Two separate pools:
