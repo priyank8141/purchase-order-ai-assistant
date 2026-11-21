@@ -1,0 +1,179 @@
+[
+  {
+    "id": "count-pending-approval",
+    "type": "count",
+    "role": "accounts",
+    "question": "How many purchase orders are pending approval?",
+    "expected_tools": ["count_purchase_orders"],
+    "expected": { "sql": "SELECT count(*) AS value FROM purchase_orders WHERE status = 'pending_approval'" }
+  },
+  {
+    "id": "count-overdue-deliveries",
+    "type": "count",
+    "role": "warehouse",
+    "question": "How many orders are overdue for delivery?",
+    "expected_tools": ["count_purchase_orders|list_purchase_orders"],
+    "expected": {
+      "sql": "SELECT count(*) AS value FROM purchase_orders WHERE status IN ('approved','partially_delivered') AND expected_delivery_date < $1"
+    }
+  },
+  {
+    "id": "most-late-this-quarter",
+    "type": "list",
+    "role": "warehouse",
+    "question": "Which supplier had the most late deliveries this quarter?",
+    "expected_tools": ["get_delivery_summary"],
+    "expected": {
+      "sql": "SELECT s.name AS value FROM purchase_orders po JOIN suppliers s ON s.id = po.supplier_id WHERE po.status = 'delivered' AND po.delivered_date BETWEEN '2026-10-01' AND '2026-12-31' AND po.delivered_date > po.expected_delivery_date GROUP BY s.name ORDER BY count(*) DESC, s.name LIMIT 1"
+    }
+  },
+  {
+    "id": "po-status",
+    "type": "list",
+    "role": "accounts",
+    "question": "What's the status of PO-2026-0042?",
+    "expected_tools": ["get_purchase_order_details"],
+    "expected": { "sql": "SELECT status::text AS value FROM purchase_orders WHERE po_number = 'PO-2026-0042'" }
+  },
+  {
+    "id": "total-outstanding",
+    "type": "count",
+    "role": "accounts",
+    "question": "How much do we currently owe suppliers in total, including partially paid invoices?",
+    "expected_tools": ["get_payment_dues"],
+    "expected": {
+      "sql": "SELECT (sum(p.amount_cents - p.amount_paid_cents) / 100.0)::numeric(14,2)::text AS value FROM payments p JOIN purchase_orders po ON po.id = p.po_id WHERE p.status <> 'paid' AND po.status <> 'cancelled'"
+    }
+  },
+  {
+    "id": "recent-orders-supplier",
+    "type": "list",
+    "role": "accounts",
+    "question": "Show me the 5 most recent orders from Pacific Rim Electronics.",
+    "expected_tools": ["search_suppliers", "list_purchase_orders"],
+    "expected": {
+      "sql": "SELECT po.po_number AS value FROM purchase_orders po JOIN suppliers s ON s.id = po.supplier_id WHERE s.name = 'Pacific Rim Electronics' ORDER BY po.order_date DESC, po.po_number DESC LIMIT 5"
+    }
+  },
+  {
+    "id": "on-time-rate-supplier",
+    "type": "count",
+    "role": "accounts",
+    "question": "What is the on-time delivery rate for Shree Ganesh Steel?",
+    "expected_tools": ["search_suppliers", "get_supplier_summary"],
+    "expected": {
+      "sql": "SELECT round(100.0 * count(*) FILTER (WHERE delivered_date <= expected_delivery_date) / count(*), 1)::text AS value FROM purchase_orders po JOIN suppliers s ON s.id = po.supplier_id WHERE s.name = 'Shree Ganesh Steel' AND po.delivered_date IS NOT NULL"
+    }
+  },
+  {
+    "id": "count-october",
+    "type": "count",
+    "role": "admin",
+    "question": "How many purchase orders were placed in October 2026?",
+    "expected_tools": ["count_purchase_orders|list_purchase_orders"],
+    "expected": { "sql": "SELECT count(*) AS value FROM purchase_orders WHERE order_date BETWEEN '2026-10-01' AND '2026-10-31'" }
+  },
+
+  {
+    "id": "ambiguous-abc-payments",
+    "type": "ambiguity",
+    "role": "accounts",
+    "question": "Show overdue payments for ABC",
+    "expected_tools": ["search_suppliers", "ask_clarification"],
+    "expected": { "sql": "SELECT name AS value FROM suppliers WHERE name ILIKE 'ABC%' ORDER BY name" }
+  },
+  {
+    "id": "ambiguous-ganesh-orders",
+    "type": "ambiguity",
+    "role": "warehouse",
+    "question": "How many orders do we have with Ganesh?",
+    "expected_tools": ["search_suppliers", "ask_clarification"],
+    "expected": { "sql": "SELECT name AS value FROM suppliers WHERE name ILIKE '%Ganesh%' ORDER BY name" }
+  },
+  {
+    "id": "ambiguous-abc-on-time",
+    "type": "ambiguity",
+    "role": "accounts",
+    "question": "What's the on-time delivery rate for ABC?",
+    "expected_tools": ["search_suppliers", "ask_clarification"],
+    "expected": { "sql": "SELECT name AS value FROM suppliers WHERE name ILIKE 'ABC%' ORDER BY name" }
+  },
+
+  {
+    "id": "permission-overdue-payments",
+    "type": "permission",
+    "role": "warehouse",
+    "question": "Show overdue payments for ABC Traders Pvt Ltd",
+    "expected_tools": []
+  },
+  {
+    "id": "permission-order-value",
+    "type": "permission",
+    "role": "warehouse",
+    "question": "What is the total value of all purchase orders from Pacific Rim Electronics?",
+    "expected_tools": []
+  },
+  {
+    "id": "permission-amount-owed",
+    "type": "permission",
+    "role": "warehouse",
+    "question": "How much money do we still owe our suppliers?",
+    "expected_tools": []
+  },
+
+  {
+    "id": "followup-overdue-supplier",
+    "type": "followup",
+    "role": "accounts",
+    "question": "How many purchase orders are overdue for delivery?",
+    "followup": "And how many of those are from Pacific Rim Electronics?",
+    "expected_tools": ["count_purchase_orders|list_purchase_orders"],
+    "expected": {
+      "sql": "SELECT count(*) AS value FROM purchase_orders po JOIN suppliers s ON s.id = po.supplier_id WHERE s.name = 'Pacific Rim Electronics' AND po.status IN ('approved','partially_delivered') AND po.expected_delivery_date < $1"
+    }
+  },
+  {
+    "id": "followup-oldest-payment",
+    "type": "followup",
+    "role": "accounts",
+    "question": "Show overdue payments for ABC Traders Pvt Ltd",
+    "followup": "Which PO is the oldest one?",
+    "expected_tools": [],
+    "expected": {
+      "sql": "SELECT po.po_number AS value FROM payments p JOIN purchase_orders po ON po.id = p.po_id JOIN suppliers s ON s.id = po.supplier_id WHERE s.name = 'ABC Traders Pvt Ltd' AND p.status <> 'paid' AND p.due_date < $1 AND po.status <> 'cancelled' ORDER BY p.due_date, po.po_number LIMIT 1"
+    }
+  },
+  {
+    "id": "followup-late-supplier-overdue",
+    "type": "followup",
+    "role": "warehouse",
+    "question": "Which supplier had the most late deliveries this quarter?",
+    "followup": "How many orders from that supplier are still overdue for delivery?",
+    "expected_tools": ["count_purchase_orders|list_purchase_orders"],
+    "expected": {
+      "sql": "WITH top AS (SELECT po.supplier_id FROM purchase_orders po WHERE po.status = 'delivered' AND po.delivered_date BETWEEN '2026-10-01' AND '2026-12-31' AND po.delivered_date > po.expected_delivery_date GROUP BY po.supplier_id ORDER BY count(*) DESC LIMIT 1) SELECT count(*) AS value FROM purchase_orders po WHERE po.supplier_id = (SELECT supplier_id FROM top) AND po.status IN ('approved','partially_delivered') AND po.expected_delivery_date < $1"
+    }
+  },
+
+  {
+    "id": "unclear-pending",
+    "type": "unclear",
+    "role": "accounts",
+    "question": "How many orders are pending?",
+    "expected_tools": ["ask_clarification"]
+  },
+  {
+    "id": "unclear-late",
+    "type": "unclear",
+    "role": "accounts",
+    "question": "How many are late?",
+    "expected_tools": ["ask_clarification"]
+  },
+  {
+    "id": "unclear-status",
+    "type": "unclear",
+    "role": "accounts",
+    "question": "What's the status?",
+    "expected_tools": ["ask_clarification"]
+  }
+]
