@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* Markdown tables in assistant answers. */
+.answer table {
+  @apply my-2 w-full border-collapse text-sm;
+}
+.answer th,
+.answer td {
+  @apply border border-zinc-200 px-2 py-1 text-left dark:border-zinc-700;
+}
+.answer th {
+  @apply bg-zinc-50 font-medium dark:bg-zinc-800;
+}
+.answer p + p,
+.answer p + table,
+.answer table + p {
+  @apply mt-2;
+}
+.answer ul {
+  @apply ml-5 list-disc;
+}
+.answer ol {
+  @apply ml-5 list-decimal;
+}
