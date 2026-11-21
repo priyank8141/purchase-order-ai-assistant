@@ -146,6 +146,8 @@ export const traces = pgTable(
     latencyMs: integer("latency_ms").notNull().default(0),
     // null = validation not applicable (e.g. no numbers / clarification turn).
     validationPassed: boolean("validation_passed"),
+    // { status, retried, unsupported: ["$1,234"], checked } for the /logs page.
+    validation: jsonb("validation"),
     error: text("error"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

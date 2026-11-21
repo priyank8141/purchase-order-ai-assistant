@@ -37,6 +37,7 @@ export interface TraceRecord {
   usage: Usage;
   latencyMs: number;
   validationPassed: boolean | null;
+  validation?: unknown;
   error?: string;
 }
 
@@ -53,6 +54,7 @@ export async function recordTrace(t: TraceRecord): Promise<number> {
       outputTokens: t.usage.outputTokens,
       latencyMs: t.latencyMs,
       validationPassed: t.validationPassed,
+      validation: t.validation ?? null,
       error: t.error ?? null,
     })
     .returning({ id: traces.id });

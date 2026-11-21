@@ -18,13 +18,24 @@ async function main(): Promise<void> {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   console.log(`Purchase order assistant (role: ${role}). /new = new conversation, /quit = exit.\n`);
 
-  for (;;) {
-    const message = (await rl.question("you> ")).trim();
-    if (!message) continue;
+  // Iterating lines (instead of rl.question) also works when input is piped in.
+  rl.setPrompt("you> ");
+  // Piped input closes the reader early; prompting a closed reader throws, so only prompt in a terminal.
+  const prompt = () => {
+    if (process.stdin.isTTY) rl.prompt();
+  };
+  prompt();
+  for await (const line of rl) {
+    const message = line.trim();
+    if (!message) {
+      prompt();
+      continue;
+    }
     if (message === "/quit") break;
     if (message === "/new") {
       conversationId = undefined;
       console.log("(new conversation)\n");
+      prompt();
       continue;
     }
     try {
@@ -33,11 +44,15 @@ async function main(): Promise<void> {
       console.log(`\nassistant> ${r.answer}`);
       if (r.clarification?.options.length) console.log(`  options: ${r.clarification.options.join(" | ")}`);
       for (const t of r.toolCalls) console.log(`  · ${t.name} ${JSON.stringify(t.input)} -> ${t.summary}`);
-      console.log(`  [${r.outcome}, trace #${r.traceId}]\n`);
+      const v = r.validation;
+      const retried = v.retried ? ", retried" : "";
+      const bad = v.unsupported.length ? ` unsupported: ${v.unsupported.join(", ")}` : "";
+      console.log(`  [${r.outcome}, numbers ${v.status}${retried}${bad}, trace #${r.traceId}]\n`);
     } catch (err) {
       // Short message only; full details are in the trace's error column.
       console.error(`error: ${err instanceof ChatError || err instanceof Error ? err.message : String(err)}\n`);
     }
+    prompt();
   }
   rl.close();
 }

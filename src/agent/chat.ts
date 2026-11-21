@@ -1,9 +1,11 @@
 import { toolContextFor } from "../tools/index";
 import { anthropicClient, claudeSettings, type ClaudeClient } from "./claude";
-import { runAgentTurn, type Clarification, type TurnOutcome } from "./loop";
+import type { Clarification, TurnOutcome } from "./loop";
 import { createConversation, getConversation, loadHistory, saveMessages } from "./memory";
 import type { Role } from "./roles";
 import { recordTrace, toToolCallTraces, type ToolCallTrace } from "./trace";
+import { validationPassed as passedFor, type ValidationStatus } from "./validate";
+import { runVerifiedTurn } from "./verifiedTurn";
 
 export interface ChatRequest {
   /** Omit to start a new conversation. */
@@ -20,7 +22,7 @@ export interface ChatResponse {
   answer: string;
   clarification?: Clarification;
   toolCalls: ToolCallTrace[];
-  validationPassed: boolean | null;
+  validation: { status: ValidationStatus; retried: boolean; unsupported: string[] };
   traceId: number;
 }
 
@@ -51,11 +53,10 @@ export async function handleChat(req: ChatRequest, client: ClaudeClient = anthro
   const deps = { client, settings: claudeSettings(), ctx: toolContextFor(conversation.role) };
 
   try {
-    const turn = await runAgentTurn({ history, question: message }, deps);
-    await saveMessages(conversation.id, turn.newMessages);
+    const turn = await runVerifiedTurn(history, message, deps);
+    await saveMessages(conversation.id, turn.messagesToSave);
     const toolCalls = toToolCallTraces(turn.toolRuns);
-    // Validation is added in Phase 5; null means "not checked".
-    const validationPassed = null;
+    const { status, retried, unsupported } = turn.validation;
     const traceId = await recordTrace({
       conversationId: conversation.id,
       question: message,
@@ -63,7 +64,8 @@ export async function handleChat(req: ChatRequest, client: ClaudeClient = anthro
       answer: turn.answer,
       usage: turn.usage,
       latencyMs: Date.now() - started,
-      validationPassed,
+      validationPassed: passedFor(status),
+      validation: turn.validation,
     });
     return {
       conversationId: conversation.id,
@@ -72,7 +74,7 @@ export async function handleChat(req: ChatRequest, client: ClaudeClient = anthro
       answer: turn.answer,
       clarification: turn.clarification,
       toolCalls,
-      validationPassed,
+      validation: { status, retried, unsupported },
       traceId,
     };
   } catch (err) {
