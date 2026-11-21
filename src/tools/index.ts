@@ -33,9 +33,9 @@ export const TERMINAL_TOOLS: ReadonlySet<ToolName> = new Set(["ask_clarification
  * Order is fixed (TOOL_NAMES order) so the tool list is byte-identical per role,
  * which keeps the prompt cache warm. The cache breakpoint goes on the last tool.
  */
-export function toolDefinitionsForRole(role: Role): Anthropic.Tool[] {
+export function toolDefinitionsForRole(role: Role): Anthropic.Beta.BetaTool[] {
   const allowed = policyFor(role).tools;
-  const defs: Anthropic.Tool[] = TOOL_NAMES.filter((n) => allowed.includes(n)).map((n) => ({
+  const defs: Anthropic.Beta.BetaTool[] = TOOL_NAMES.filter((n) => allowed.includes(n)).map((n) => ({
     name: n,
     description: REGISTRY[n].description,
     input_schema: REGISTRY[n].inputSchema,

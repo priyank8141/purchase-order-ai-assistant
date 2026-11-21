@@ -27,7 +27,7 @@ interface ToolSpec<S extends z.ZodObject> {
 export interface RegisteredTool {
   name: ToolName;
   description: string;
-  inputSchema: Anthropic.Tool.InputSchema;
+  inputSchema: Anthropic.Beta.BetaTool.InputSchema;
   /** Validates input, enforces role, runs, and redacts. Throws ToolError on expected failures. */
   execute(rawInput: unknown, ctx: ToolContext): Promise<ToolOutput>;
 }
@@ -40,7 +40,7 @@ export function defineTool<S extends z.ZodObject>(spec: ToolSpec<S>): Registered
   return {
     name: spec.name,
     description: spec.description,
-    inputSchema: jsonSchema as Anthropic.Tool.InputSchema,
+    inputSchema: jsonSchema as Anthropic.Beta.BetaTool.InputSchema,
     async execute(rawInput, ctx) {
       // Defense in depth: even if a disallowed tool somehow gets called
       // (prompt injection, a bug in the tool list), it refuses here.
