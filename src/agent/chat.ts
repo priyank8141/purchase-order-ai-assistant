@@ -46,7 +46,9 @@ export async function handleChat(req: ChatRequest, client: ClaudeClient = anthro
   if (message.length > 2000) throw new ChatError(400, "Message is too long (max 2000 characters)");
 
   // The role comes from the stored conversation, never from the request, once a conversation exists.
-  const conversation = req.conversationId ? await getConversation(req.conversationId) : await createConversation(req.role);
+  const conversation = req.conversationId
+    ? await getConversation(req.conversationId)
+    : await createConversation(req.role);
   if (!conversation) throw new ChatError(404, "Conversation not found");
 
   const history = await loadHistory(conversation.id);

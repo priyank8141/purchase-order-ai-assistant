@@ -72,7 +72,11 @@ export async function runAgentTurn({ history, question }: TurnInput, deps: TurnD
  * Continues a turn whose messages so far are `turnMessages` (which must end in a
  * user message). Exposed so validation can append a correction and resume.
  */
-export async function continueTurn(history: MessageParam[], turnMessages: MessageParam[], deps: TurnDeps): Promise<TurnResult> {
+export async function continueTurn(
+  history: MessageParam[],
+  turnMessages: MessageParam[],
+  deps: TurnDeps,
+): Promise<TurnResult> {
   const { client, settings, ctx } = deps;
   const runTool = deps.runTool ?? defaultRunTool;
   const system = buildSystemPrompt(ctx.role, ctx.today, ctx.currency);
@@ -111,7 +115,8 @@ export async function continueTurn(history: MessageParam[], turnMessages: Messag
     if (response.stop_reason === "refusal") return finish("refusal", textOf(response) || REFUSAL_MESSAGE);
     if (response.stop_reason !== "tool_use") {
       const text = textOf(response);
-      if (response.stop_reason === "max_tokens") return finish("max_tokens", `${text}\n\n(The answer was cut off.)`.trim());
+      if (response.stop_reason === "max_tokens")
+        return finish("max_tokens", `${text}\n\n(The answer was cut off.)`.trim());
       return finish("answered", text);
     }
 

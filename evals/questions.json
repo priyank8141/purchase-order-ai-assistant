@@ -71,7 +71,9 @@
     "role": "admin",
     "question": "How many purchase orders were placed in October 2026?",
     "expected_tools": ["count_purchase_orders|list_purchase_orders"],
-    "expected": { "sql": "SELECT count(*) AS value FROM purchase_orders WHERE order_date BETWEEN '2026-10-01' AND '2026-10-31'" }
+    "expected": {
+      "sql": "SELECT count(*) AS value FROM purchase_orders WHERE order_date BETWEEN '2026-10-01' AND '2026-10-31'"
+    }
   },
 
   {

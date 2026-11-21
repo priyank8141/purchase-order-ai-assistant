@@ -15,7 +15,13 @@ import type { ToolRun } from "@/tools/index";
 import { FakeClaude, reply, text, toolUse } from "./fakeClaude";
 
 const values = (t: string) => extractNumbers(t).map((n) => n.value);
-const run = (output: Record<string, unknown>, input: unknown = {}): ToolRun => ({ name: "x", input, ok: true, output, durationMs: 1 });
+const run = (output: Record<string, unknown>, input: unknown = {}): ToolRun => ({
+  name: "x",
+  input,
+  ok: true,
+  output,
+  durationMs: 1,
+});
 
 describe("extractNumbers", () => {
   it("reads plain, grouped, decimal, currency and percent numbers", () => {
@@ -78,7 +84,10 @@ describe("collectSupportedNumbers", () => {
     const history: MessageParam[] = [
       { role: "user", content: "how many overdue?" },
       { role: "assistant", content: [{ type: "tool_use", id: "t1", name: "count_purchase_orders", input: {} }] },
-      { role: "user", content: [{ type: "tool_result", tool_use_id: "t1", content: JSON.stringify({ total_count: 33 }) }] },
+      {
+        role: "user",
+        content: [{ type: "tool_result", tool_use_id: "t1", content: JSON.stringify({ total_count: 33 }) }],
+      },
       // Prior *answers* are not a source: they could contain unverified numbers.
       { role: "assistant", content: [{ type: "text", text: "There are 999." }] },
     ];
@@ -89,10 +98,17 @@ describe("collectSupportedNumbers", () => {
 });
 
 describe("validateAnswer", () => {
-  const supported = collectSupportedNumbers([run({ total_count: 25, overdue_outstanding_amount: "26580.47", on_time_rate_pct: 35 })], "q");
+  const supported = collectSupportedNumbers(
+    [run({ total_count: 25, overdue_outstanding_amount: "26580.47", on_time_rate_pct: 35 })],
+    "q",
+  );
 
   it("verifies an answer whose numbers all come from tools", () => {
-    expect(validateAnswer("25 orders, $26,580.47 overdue, 35% on time.", supported)).toEqual({ status: "verified", unsupported: [], checked: 3 });
+    expect(validateAnswer("25 orders, $26,580.47 overdue, 35% on time.", supported)).toEqual({
+      status: "verified",
+      unsupported: [],
+      checked: 3,
+    });
   });
   it("flags invented or self-computed numbers", () => {
     // 65% = 100 - 35 (computed by the model) and 50 (invented).
@@ -111,11 +127,20 @@ describe("validateAnswer", () => {
 describe("runVerifiedTurn", () => {
   const settings: ClaudeSettings = { model: "m", effort: "medium", refusalFallback: false };
   const ctx: ToolContext = { role: "accounts", today: "2026-11-15", currency: "USD", db: {} as ToolContext["db"] };
-  const runTool = async (name: string, input: unknown): Promise<ToolRun> => ({ name, input, ok: true, output: { total_count: 25 }, durationMs: 1 });
+  const runTool = async (name: string, input: unknown): Promise<ToolRun> => ({
+    name,
+    input,
+    ok: true,
+    output: { total_count: 25 },
+    durationMs: 1,
+  });
   const deps = (client: FakeClaude): TurnDeps => ({ client, settings, ctx, runTool });
 
   it("passes without retry when numbers are supported", async () => {
-    const client = new FakeClaude([reply("tool_use", toolUse("count_purchase_orders", {})), reply("end_turn", text("There are 25."))]);
+    const client = new FakeClaude([
+      reply("tool_use", toolUse("count_purchase_orders", {})),
+      reply("end_turn", text("There are 25.")),
+    ]);
     const r = await runVerifiedTurn([], "how many?", deps(client));
     expect(r.validation).toMatchObject({ status: "verified", retried: false });
     expect(r.modelCalls).toBe(2);
@@ -145,7 +170,10 @@ describe("runVerifiedTurn", () => {
   });
 
   it("adds a visible warning when the retry still fails", async () => {
-    const client = new FakeClaude([reply("end_turn", text("About 40 orders.")), reply("end_turn", text("Roughly 41 orders."))]);
+    const client = new FakeClaude([
+      reply("end_turn", text("About 40 orders.")),
+      reply("end_turn", text("Roughly 41 orders.")),
+    ]);
     const r = await runVerifiedTurn([], "how many?", deps(client));
     expect(r.validation).toMatchObject({ status: "unverified", retried: true, unsupported: ["41"] });
     expect(r.answer).toContain(UNVERIFIED_WARNING);
@@ -153,7 +181,9 @@ describe("runVerifiedTurn", () => {
   });
 
   it("does not validate clarification turns", async () => {
-    const client = new FakeClaude([reply("tool_use", toolUse("ask_clarification", { question: "Which of the 3 ABC suppliers?" }))]);
+    const client = new FakeClaude([
+      reply("tool_use", toolUse("ask_clarification", { question: "Which of the 3 ABC suppliers?" })),
+    ]);
     const clarifyRun = async (name: string, input: unknown): Promise<ToolRun> => ({
       name,
       input,

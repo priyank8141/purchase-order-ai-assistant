@@ -16,17 +16,33 @@ export function summarizeToolRun(run: ToolRun): string {
   const o = run.output;
   if (!run.ok) return `${String(o.error)}: ${String(o.message ?? "")}`.slice(0, 200);
   const parts: string[] = [];
-  for (const key of ["total_count", "returned", "ambiguous", "found", "total_orders", "delivered", "delivered_late", "overdue_count"]) {
+  for (const key of [
+    "total_count",
+    "returned",
+    "ambiguous",
+    "found",
+    "total_orders",
+    "delivered",
+    "delivered_late",
+    "overdue_count",
+  ]) {
     if (key in o) parts.push(`${key}=${JSON.stringify(o[key])}`);
   }
-  if (o.resolved && typeof o.resolved === "object") parts.push(`resolved=${String((o.resolved as { name?: string }).name)}`);
+  if (o.resolved && typeof o.resolved === "object")
+    parts.push(`resolved=${String((o.resolved as { name?: string }).name)}`);
   if (Array.isArray(o.candidates) && o.ambiguous) parts.push(`candidates=${o.candidates.length}`);
   if (o.asked) parts.push(`asked="${String(o.question)}"`);
   return parts.join(", ") || "ok";
 }
 
 export function toToolCallTraces(runs: ToolRun[]): ToolCallTrace[] {
-  return runs.map((r) => ({ name: r.name, input: r.input, ok: r.ok, summary: summarizeToolRun(r), duration_ms: r.durationMs }));
+  return runs.map((r) => ({
+    name: r.name,
+    input: r.input,
+    ok: r.ok,
+    summary: summarizeToolRun(r),
+    duration_ms: r.durationMs,
+  }));
 }
 
 export interface TraceRecord {

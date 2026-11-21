@@ -116,10 +116,22 @@ export function generateSeedData(today: string, currency: string): SeedData {
         const dueDate = addDays(draft.orderDate, terms + n * 30);
         const payStatus = pickPaymentStatus(dueDate < today, status, pick);
         const amountPaidCents =
-          payStatus === "paid" ? amountCents : payStatus === "partially_paid" ? Math.round(amountCents * f.number.float({ min: 0.2, max: 0.8 })) : 0;
+          payStatus === "paid"
+            ? amountCents
+            : payStatus === "partially_paid"
+              ? Math.round(amountCents * f.number.float({ min: 0.2, max: 0.8 }))
+              : 0;
         const paidDate =
           payStatus === "paid" ? maxDate(draft.orderDate, minDate(addDays(dueDate, int(-10, 10)), today)) : null;
-        paymentRows.push({ id: paymentRows.length + 1, poId: orderId, amountCents, amountPaidCents, dueDate, paidDate, status: payStatus });
+        paymentRows.push({
+          id: paymentRows.length + 1,
+          poId: orderId,
+          amountCents,
+          amountPaidCents,
+          dueDate,
+          paidDate,
+          status: payStatus,
+        });
       });
     }
   }

@@ -83,7 +83,11 @@ function HowIGotThis({ toolCalls }: { toolCalls: ChatResponse["toolCalls"] }) {
             <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-all text-xs text-zinc-600 dark:text-zinc-400">
               {JSON.stringify(t.input)}
             </pre>
-            <div className={`mt-1 text-xs ${t.ok ? "text-zinc-700 dark:text-zinc-300" : "text-red-600 dark:text-red-400"}`}>→ {t.summary}</div>
+            <div
+              className={`mt-1 text-xs ${t.ok ? "text-zinc-700 dark:text-zinc-300" : "text-red-600 dark:text-red-400"}`}
+            >
+              → {t.summary}
+            </div>
           </li>
         ))}
       </ol>
@@ -92,9 +96,11 @@ function HowIGotThis({ toolCalls }: { toolCalls: ChatResponse["toolCalls"] }) {
 }
 
 const TONES = {
-  green: "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800",
+  green:
+    "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800",
   amber: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800",
-  indigo: "bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800",
+  indigo:
+    "bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800",
 } as const;
 
 function Pill({ tone, title, children }: { tone: keyof typeof TONES; title?: string; children: React.ReactNode }) {

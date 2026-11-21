@@ -8,7 +8,13 @@ import { HIDDEN_NOTE_KEY, redactForRole } from "@/tools/redact";
 import { escapeLike, pct } from "@/tools/sql";
 import { resolveSupplierMatch, type SupplierCandidate } from "@/tools/supplierMatch";
 
-const c = (id: number, score: number, exact = false): SupplierCandidate => ({ id, name: `S${id}`, city: "X", score, exact });
+const c = (id: number, score: number, exact = false): SupplierCandidate => ({
+  id,
+  name: `S${id}`,
+  city: "X",
+  score,
+  exact,
+});
 
 describe("resolveSupplierMatch", () => {
   it("exact name match wins even when others score equally", () => {

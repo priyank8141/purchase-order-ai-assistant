@@ -60,7 +60,8 @@ export function collectSupportedNumbers(runs: ToolRun[], question: string, histo
   const walk = (v: unknown): void => {
     if (typeof v === "number" && Number.isFinite(v)) found.push(v);
     else if (typeof v === "string") {
-      if (/^-?\d+(\.\d+)?$/.test(v)) found.push(Number(v)); // decimal amounts like "12345.67"
+      if (/^-?\d+(\.\d+)?$/.test(v))
+        found.push(Number(v)); // decimal amounts like "12345.67"
       else for (const n of extractNumbers(v)) found.push(n.value); // numbers inside names
     } else if (Array.isArray(v)) {
       found.push(v.length); // derived: "showing 5 orders"

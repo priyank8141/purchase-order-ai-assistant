@@ -70,13 +70,18 @@ export async function runTool(name: string, input: unknown, ctx: ToolContext): P
     durationMs: Date.now() - started,
   });
 
-  if (!isToolName(name)) return done(false, { error: "unknown_tool", message: `There is no tool named ${name}.` }, "unknown_tool");
+  if (!isToolName(name))
+    return done(false, { error: "unknown_tool", message: `There is no tool named ${name}.` }, "unknown_tool");
   try {
     return done(true, await REGISTRY[name].execute(input, ctx));
   } catch (err) {
     if (err instanceof ToolError) return done(false, { error: err.code, message: err.message }, err.code);
     // Unexpected errors (DB down, SQL bug): log details server-side, give Claude a safe message.
     console.error(`[tool ${name}] unexpected error`, err);
-    return done(false, { error: "internal_error", message: "The tool failed unexpectedly. Try again or tell the user." }, "internal_error");
+    return done(
+      false,
+      { error: "internal_error", message: "The tool failed unexpectedly. Try again or tell the user." },
+      "internal_error",
+    );
   }
 }

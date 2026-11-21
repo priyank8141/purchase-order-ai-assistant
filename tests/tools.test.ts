@@ -38,7 +38,11 @@ describe("search_suppliers", () => {
   it("'ABC' is ambiguous across the three ABC suppliers", async () => {
     const out = await ok("search_suppliers", { query: "ABC" });
     expect(out.ambiguous).toBe(true);
-    expect(out.candidates.map((c: { name: string }) => c.name).sort()).toEqual(["ABC Metals", "ABC Packaging", "ABC Traders Pvt Ltd"]);
+    expect(out.candidates.map((c: { name: string }) => c.name).sort()).toEqual([
+      "ABC Metals",
+      "ABC Packaging",
+      "ABC Traders Pvt Ltd",
+    ]);
   });
   it("'Ganesh' is ambiguous between the two Ganesh suppliers", async () => {
     const out = await ok("search_suppliers", { query: "Ganesh" });
@@ -96,7 +100,9 @@ describe("count_purchase_orders", () => {
     expect(out.suppliers_total_count).toBe(20);
   });
   it("filters by order date range", async () => {
-    const exp = await expectedOne("SELECT count(*) AS n FROM purchase_orders WHERE order_date BETWEEN '2026-07-01' AND '2026-09-30'");
+    const exp = await expectedOne(
+      "SELECT count(*) AS n FROM purchase_orders WHERE order_date BETWEEN '2026-07-01' AND '2026-09-30'",
+    );
     const out = await ok("count_purchase_orders", { date_from: "2026-07-01", date_to: "2026-09-30" });
     expect(out.total_count).toBe(exp.n);
   });

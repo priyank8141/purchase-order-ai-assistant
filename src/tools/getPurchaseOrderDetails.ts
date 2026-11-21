@@ -85,9 +85,10 @@ export const getPurchaseOrderDetails = defineTool({
         due_date: string;
         paid_date: string | null;
         status: string;
-      }>(`SELECT amount_cents, amount_paid_cents, due_date, paid_date, status FROM payments WHERE po_id = $1 ORDER BY due_date`, [
-        po.id,
-      ]);
+      }>(
+        `SELECT amount_cents, amount_paid_cents, due_date, paid_date, status FROM payments WHERE po_id = $1 ORDER BY due_date`,
+        [po.id],
+      );
       result.payments = pays.rows.map((p) => ({
         status: p.status,
         due_date: p.due_date,

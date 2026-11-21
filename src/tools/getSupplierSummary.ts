@@ -24,7 +24,8 @@ export const getSupplierSummary = defineTool({
       [supplier_id],
     );
     const s = supplier.rows[0];
-    if (!s) return { found: false, message: `No supplier with id ${supplier_id}. Use search_suppliers to find the id.` };
+    if (!s)
+      return { found: false, message: `No supplier with id ${supplier_id}. Use search_suppliers to find the id.` };
 
     const q = new Query();
     const where = [`po.supplier_id = ${q.param(supplier_id)}`];

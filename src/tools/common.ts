@@ -25,11 +25,7 @@ export const isoDate = z
     return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
   }, "Not a real date");
 
-export const supplierId = z
-  .number()
-  .int()
-  .positive()
-  .describe("Supplier id from search_suppliers. Never guess an id.");
+export const supplierId = z.number().int().positive().describe("Supplier id from search_suppliers. Never guess an id.");
 
 export const limit = z.number().int().min(1).max(50).default(20).describe("Max rows to return (1-50, default 20).");
 
@@ -49,7 +45,9 @@ export const poFilters = {
   payment_overdue: z
     .boolean()
     .optional()
-    .describe("true = orders with at least one unpaid or partially paid payment past its due date. Accounts/admin only."),
+    .describe(
+      "true = orders with at least one unpaid or partially paid payment past its due date. Accounts/admin only.",
+    ),
 };
 
 export type PoFilters = z.output<z.ZodObject<typeof poFilters>>;

@@ -17,7 +17,10 @@ const body = z.object({
 export async function POST(req: Request) {
   const parsed = body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid request", details: z.flattenError(parsed.error).fieldErrors }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request", details: z.flattenError(parsed.error).fieldErrors },
+      { status: 400 },
+    );
   }
   try {
     return NextResponse.json(await handleChat(parsed.data));

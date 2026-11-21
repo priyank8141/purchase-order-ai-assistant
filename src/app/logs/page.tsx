@@ -34,7 +34,9 @@ export default async function LogsPage() {
   return (
     <div className="py-6">
       <h1 className="text-xl font-semibold">Recent traces</h1>
-      <p className="mt-1 text-sm text-zinc-500">The last 100 questions: tools called, latency, tokens, and number validation.</p>
+      <p className="mt-1 text-sm text-zinc-500">
+        The last 100 questions: tools called, latency, tokens, and number validation.
+      </p>
 
       {rows.length === 0 ? (
         <p className="mt-8 text-center text-sm text-zinc-500">No traces yet. Ask something in the chat.</p>
@@ -58,7 +60,9 @@ export default async function LogsPage() {
                 const v = (r.validation as ValidationInfo | null) ?? {};
                 return (
                   <tr key={r.id} className="align-top">
-                    <td className="whitespace-nowrap px-3 py-2 text-zinc-500">{r.createdAt.toISOString().slice(5, 19).replace("T", " ")}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-zinc-500">
+                      {r.createdAt.toISOString().slice(5, 19).replace("T", " ")}
+                    </td>
                     <td className="px-3 py-2">{r.role}</td>
                     <td className="max-w-xs px-3 py-2">
                       {r.question}
@@ -71,18 +75,26 @@ export default async function LogsPage() {
                         <ul className="space-y-0.5">
                           {tools.map((t, i) => (
                             <li key={i} title={`${JSON.stringify(t.input)}\n→ ${t.summary}`}>
-                              <code className={`text-xs ${t.ok ? "" : "text-red-600 dark:text-red-400"}`}>{t.name}</code>
+                              <code className={`text-xs ${t.ok ? "" : "text-red-600 dark:text-red-400"}`}>
+                                {t.name}
+                              </code>
                             </li>
                           ))}
                         </ul>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{(r.latencyMs / 1000).toFixed(1)} s</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">
+                      {(r.latencyMs / 1000).toFixed(1)} s
+                    </td>
                     <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">
                       {r.inputTokens.toLocaleString()} / {r.outputTokens.toLocaleString()}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2">
-                      {r.passed === true && <span className="text-emerald-700 dark:text-emerald-400">✓ verified{v.retried ? " (retry)" : ""}</span>}
+                      {r.passed === true && (
+                        <span className="text-emerald-700 dark:text-emerald-400">
+                          ✓ verified{v.retried ? " (retry)" : ""}
+                        </span>
+                      )}
                       {r.passed === false && (
                         <span className="text-amber-700 dark:text-amber-400" title={v.unsupported?.join(", ")}>
                           ⚠ unverified

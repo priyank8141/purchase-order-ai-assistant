@@ -31,7 +31,9 @@ export function claudeSettings(): ClaudeSettings {
 }
 
 /** Request fields shared by every call: model, effort, and the optional server-side refusal fallback. */
-export function baseRequest(settings: ClaudeSettings): Pick<MessageParams, "model" | "output_config" | "betas" | "fallbacks"> {
+export function baseRequest(
+  settings: ClaudeSettings,
+): Pick<MessageParams, "model" | "output_config" | "betas" | "fallbacks"> {
   return {
     model: settings.model,
     output_config: { effort: settings.effort },

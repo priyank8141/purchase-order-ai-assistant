@@ -24,9 +24,16 @@ function stubRunner() {
     calls.push(name);
     if (name === "ask_clarification") {
       const i = input as { question: string; options?: string[] };
-      return { name, input, ok: true, output: { asked: true, question: i.question, options: i.options ?? [] }, durationMs: 1 };
+      return {
+        name,
+        input,
+        ok: true,
+        output: { asked: true, question: i.question, options: i.options ?? [] },
+        durationMs: 1,
+      };
     }
-    if (name.startsWith("fail")) return { name, input, ok: false, output: { error: "invalid_input", message: "bad" }, durationMs: 1 };
+    if (name.startsWith("fail"))
+      return { name, input, ok: false, output: { error: "invalid_input", message: "bad" }, durationMs: 1 };
     return { name, input, ok: true, output: { total_count: 7 }, durationMs: 1 };
   };
   return { calls, runTool };
@@ -46,7 +53,10 @@ function assertPairsIntact(messages: MessageParam[]) {
     if (ids.length === 0) return;
     const next = messages[i + 1];
     expect(next?.role).toBe("user");
-    const resultIds = typeof next!.content === "string" ? [] : next!.content.flatMap((b) => (b.type === "tool_result" ? [b.tool_use_id] : []));
+    const resultIds =
+      typeof next!.content === "string"
+        ? []
+        : next!.content.flatMap((b) => (b.type === "tool_result" ? [b.tool_use_id] : []));
     expect(resultIds.sort()).toEqual([...ids].sort());
   });
 }
@@ -72,7 +82,10 @@ describe("agent loop", () => {
     // The second request carries the current turn's thinking block back unchanged.
     const second = client.requests[1]!;
     const assistant = second.messages[1]!;
-    expect(Array.isArray(assistant.content) && assistant.content[0]).toMatchObject({ type: "thinking", thinking: "plan" });
+    expect(Array.isArray(assistant.content) && assistant.content[0]).toMatchObject({
+      type: "thinking",
+      thinking: "plan",
+    });
   });
 
   it("returns all parallel tool results in ONE user message, with is_error on failures", async () => {
@@ -91,7 +104,9 @@ describe("agent loop", () => {
   });
 
   it(`stops after ${MAX_TOOL_ROUNDS} tool rounds with a friendly message and valid history`, async () => {
-    const script = Array.from({ length: MAX_TOOL_ROUNDS + 1 }, () => reply("tool_use", toolUse("count_purchase_orders", {})));
+    const script = Array.from({ length: MAX_TOOL_ROUNDS + 1 }, () =>
+      reply("tool_use", toolUse("count_purchase_orders", {})),
+    );
     const client = new FakeClaude(script);
     const { d, calls } = deps(client);
     const r = await runAgentTurn({ history: [], question: "loop forever" }, d);
@@ -105,7 +120,10 @@ describe("agent loop", () => {
 
   it("ends the turn on ask_clarification without calling Claude again", async () => {
     const client = new FakeClaude([
-      reply("tool_use", toolUse("ask_clarification", { question: "Which ABC supplier?", options: ["ABC Metals", "ABC Packaging"] })),
+      reply(
+        "tool_use",
+        toolUse("ask_clarification", { question: "Which ABC supplier?", options: ["ABC Metals", "ABC Packaging"] }),
+      ),
     ]);
     const { d } = deps(client);
     const r = await runAgentTurn({ history: [], question: "Show overdue payments for ABC" }, d);
@@ -113,7 +131,10 @@ describe("agent loop", () => {
     expect(r.clarification).toEqual({ question: "Which ABC supplier?", options: ["ABC Metals", "ABC Packaging"] });
     expect(r.modelCalls).toBe(1);
     assertPairsIntact(r.newMessages);
-    expect(r.newMessages.at(-1)).toEqual({ role: "assistant", content: [{ type: "text", text: "Which ABC supplier?" }] });
+    expect(r.newMessages.at(-1)).toEqual({
+      role: "assistant",
+      content: [{ type: "text", text: "Which ABC supplier?" }],
+    });
   });
 
   it("handles a refusal", async () => {

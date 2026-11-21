@@ -29,7 +29,12 @@ const toolResult = (id: string): MessageParam => ({
 });
 
 /** Turn with one tool call = 4 messages. */
-const toolTurn = (n: number): MessageParam[] => [user(`q${n}`), assistantTool(`t${n}`), toolResult(`t${n}`), assistantText(`a${n}`)];
+const toolTurn = (n: number): MessageParam[] => [
+  user(`q${n}`),
+  assistantTool(`t${n}`),
+  toolResult(`t${n}`),
+  assistantText(`a${n}`),
+];
 
 describe("selectRecentTurns", () => {
   it("keeps whole turns within the limit, newest last", () => {
@@ -69,7 +74,10 @@ describe("stripThinking", () => {
   });
 
   it("drops assistant messages that only contained thinking", () => {
-    const out = stripThinking([user("q"), { role: "assistant", content: [{ type: "thinking", thinking: "x", signature: "s" }] }]);
+    const out = stripThinking([
+      user("q"),
+      { role: "assistant", content: [{ type: "thinking", thinking: "x", signature: "s" }] },
+    ]);
     expect(out).toEqual([user("q")]);
   });
 });
@@ -103,7 +111,10 @@ describe("handleChat", () => {
     expect(first.toolCalls[0]!.summary).toContain("total_count=");
 
     // Client tries to escalate to admin on the second message; the stored role wins.
-    const second = await handleChat({ conversationId: first.conversationId, role: "admin", message: "and how many of those are from ABC?" }, client);
+    const second = await handleChat(
+      { conversationId: first.conversationId, role: "admin", message: "and how many of those are from ABC?" },
+      client,
+    );
     expect(second.role).toBe("warehouse");
     const followUpRequest = client.requests[2]!;
     expect(followUpRequest.tools?.map((t) => (t as { name: string }).name)).not.toContain("get_payment_dues");
@@ -124,9 +135,9 @@ describe("handleChat", () => {
 
   it("rejects unknown conversations and empty messages", async () => {
     const client = new FakeClaude([]);
-    await expect(handleChat({ conversationId: "00000000-0000-0000-0000-000000000000", role: "admin", message: "hi" }, client)).rejects.toThrow(
-      /not found/,
-    );
+    await expect(
+      handleChat({ conversationId: "00000000-0000-0000-0000-000000000000", role: "admin", message: "hi" }, client),
+    ).rejects.toThrow(/not found/);
     // Validation happens before a conversation is created, so nothing to clean up here.
     await expect(handleChat({ role: "admin", message: "   " }, client)).rejects.toThrow(/empty/);
   });

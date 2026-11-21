@@ -12,7 +12,8 @@ const SUGGESTIONS = [
   "What's the status of PO-2026-0042?",
 ];
 
-type Entry = { kind: "user"; text: string } | { kind: "assistant"; response: ChatResponse } | { kind: "error"; text: string };
+type Entry =
+  { kind: "user"; text: string } | { kind: "assistant"; response: ChatResponse } | { kind: "error"; text: string };
 
 export function Chat() {
   const [role, setRole] = useState<Role>("accounts");
@@ -65,7 +66,11 @@ export function Chat() {
   return (
     <div className="flex min-h-[calc(100vh-57px)] flex-col py-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-lg border border-zinc-200 bg-white p-1 dark:border-zinc-800 dark:bg-zinc-900" role="tablist" aria-label="Role">
+        <div
+          className="inline-flex rounded-lg border border-zinc-200 bg-white p-1 dark:border-zinc-800 dark:bg-zinc-900"
+          role="tablist"
+          aria-label="Role"
+        >
           {ROLES.map((r) => (
             <button
               key={r}
@@ -74,7 +79,9 @@ export function Chat() {
               aria-selected={r === role}
               onClick={() => switchRole(r)}
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
-                r === role ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                r === role
+                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
               }`}
             >
               {ROLE_POLICIES[r].label}
@@ -88,20 +95,27 @@ export function Chat() {
         {entries.length === 0 && (
           <div className="py-10 text-center">
             <h1 className="text-xl font-semibold">Ask about purchase orders</h1>
-            <p className="mt-1 text-sm text-zinc-500">Plain English questions over a fake ERP. Answers come only from database lookups.</p>
+            <p className="mt-1 text-sm text-zinc-500">
+              Plain English questions over a fake ERP. Answers come only from database lookups.
+            </p>
           </div>
         )}
         {entries.map((e, i) =>
           e.kind === "user" ? (
             <div key={i} className="flex justify-end">
-              <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-zinc-900 px-4 py-2.5 text-[15px] text-white dark:bg-zinc-100 dark:text-zinc-900">{e.text}</div>
+              <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-zinc-900 px-4 py-2.5 text-[15px] text-white dark:bg-zinc-100 dark:text-zinc-900">
+                {e.text}
+              </div>
             </div>
           ) : e.kind === "assistant" ? (
             <div key={i} className="flex">
               <AssistantMessage response={e.response} isLatest={i === lastAssistant && !loading} onOption={send} />
             </div>
           ) : (
-            <div key={i} className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+            <div
+              key={i}
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+            >
               {e.text}
             </div>
           ),
@@ -110,7 +124,11 @@ export function Chat() {
           <div className="flex items-center gap-2 text-sm text-zinc-500" aria-live="polite">
             <span className="flex gap-1">
               {[0, 150, 300].map((d) => (
-                <span key={d} className="h-2 w-2 animate-bounce rounded-full bg-zinc-400" style={{ animationDelay: `${d}ms` }} />
+                <span
+                  key={d}
+                  className="h-2 w-2 animate-bounce rounded-full bg-zinc-400"
+                  style={{ animationDelay: `${d}ms` }}
+                />
               ))}
             </span>
             Looking it up…

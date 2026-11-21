@@ -3,8 +3,16 @@ import { checkAnswerContains, checkClarifiesWith, checkNoAmounts, checkTools } f
 
 describe("eval checks", () => {
   it("checkTools supports alternatives and reports what's missing", () => {
-    expect(checkTools(["search_suppliers", "count_purchase_orders|list_purchase_orders"], ["search_suppliers", "list_purchase_orders"]).ok).toBe(true);
-    expect(checkTools(["get_delivery_summary"], ["count_purchase_orders"])).toEqual({ ok: false, detail: "missing get_delivery_summary" });
+    expect(
+      checkTools(
+        ["search_suppliers", "count_purchase_orders|list_purchase_orders"],
+        ["search_suppliers", "list_purchase_orders"],
+      ).ok,
+    ).toBe(true);
+    expect(checkTools(["get_delivery_summary"], ["count_purchase_orders"])).toEqual({
+      ok: false,
+      detail: "missing get_delivery_summary",
+    });
     expect(checkTools([], []).ok).toBe(true);
   });
 
@@ -20,8 +28,16 @@ describe("eval checks", () => {
   });
 
   it("checkClarifiesWith looks at options and the question", () => {
-    expect(checkClarifiesWith(["ABC Metals", "ABC Packaging"], "Or ABC Traders Pvt Ltd?", ["ABC Metals", "ABC Packaging", "ABC Traders Pvt Ltd"]).ok).toBe(true);
-    expect(checkClarifiesWith(["ABC Metals"], "Which one?", ["ABC Metals", "ABC Packaging"]).detail).toBe("not offered: ABC Packaging");
+    expect(
+      checkClarifiesWith(["ABC Metals", "ABC Packaging"], "Or ABC Traders Pvt Ltd?", [
+        "ABC Metals",
+        "ABC Packaging",
+        "ABC Traders Pvt Ltd",
+      ]).ok,
+    ).toBe(true);
+    expect(checkClarifiesWith(["ABC Metals"], "Which one?", ["ABC Metals", "ABC Packaging"]).detail).toBe(
+      "not offered: ABC Packaging",
+    );
   });
 
   it("checkNoAmounts flags currency amounts only", () => {

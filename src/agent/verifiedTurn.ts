@@ -1,5 +1,11 @@
 import { continueTurn, runAgentTurn, type MessageParam, type TurnDeps, type TurnResult, type Usage } from "./loop";
-import { collectSupportedNumbers, retryInstruction, UNVERIFIED_WARNING, validateAnswer, type ValidationResult } from "./validate";
+import {
+  collectSupportedNumbers,
+  retryInstruction,
+  UNVERIFIED_WARNING,
+  validateAnswer,
+  type ValidationResult,
+} from "./validate";
 
 export interface VerifiedTurn extends TurnResult {
   validation: ValidationResult & { retried: boolean };
@@ -13,13 +19,22 @@ export interface VerifiedTurn extends TurnResult {
  * warning. Only "answered" turns are validated; clarifications, refusals and
  * tool-limit messages contain no data claims.
  */
-export async function runVerifiedTurn(history: MessageParam[], question: string, deps: TurnDeps): Promise<VerifiedTurn> {
+export async function runVerifiedTurn(
+  history: MessageParam[],
+  question: string,
+  deps: TurnDeps,
+): Promise<VerifiedTurn> {
   const first = await runAgentTurn({ history, question }, deps);
   if (first.outcome !== "answered") {
-    return { ...first, validation: { status: "not_applicable", unsupported: [], checked: 0, retried: false }, messagesToSave: first.newMessages };
+    return {
+      ...first,
+      validation: { status: "not_applicable", unsupported: [], checked: 0, retried: false },
+      messagesToSave: first.newMessages,
+    };
   }
 
-  const check = (turn: TurnResult, runs = turn.toolRuns) => validateAnswer(turn.answer, collectSupportedNumbers(runs, question, history));
+  const check = (turn: TurnResult, runs = turn.toolRuns) =>
+    validateAnswer(turn.answer, collectSupportedNumbers(runs, question, history));
   const firstCheck = check(first);
   if (firstCheck.status !== "unverified") {
     return { ...first, validation: { ...firstCheck, retried: false }, messagesToSave: first.newMessages };

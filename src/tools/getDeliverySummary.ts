@@ -36,7 +36,10 @@ export const getDeliverySummary = defineTool({
       date_to: isoDate.describe("Period end (YYYY-MM-DD), inclusive."),
       supplier_id: supplierId.optional(),
       group_by: z.enum(["supplier"]).optional(),
-      sort: z.enum(Object.keys(SORTS) as [keyof typeof SORTS]).default("late_desc").describe("Ordering for group_by='supplier'."),
+      sort: z
+        .enum(Object.keys(SORTS) as [keyof typeof SORTS])
+        .default("late_desc")
+        .describe("Ordering for group_by='supplier'."),
       limit: limit.describe("Max suppliers when group_by='supplier' (1-50, default 20)."),
     })
     .refine((v) => checkDateRange(v.date_from, v.date_to), "date_from must be on or before date_to"),

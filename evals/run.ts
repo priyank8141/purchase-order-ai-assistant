@@ -55,7 +55,9 @@ function parseArgs(argv: string[]) {
   };
   return {
     dryRun: argv.includes("--dry-run"),
-    only: get("--only")?.split(",").map((s) => s.trim()),
+    only: get("--only")
+      ?.split(",")
+      .map((s) => s.trim()),
     model: get("--model"),
     effort: get("--effort"),
   };
@@ -75,7 +77,12 @@ async function ask(q: Question): Promise<ChatResponse> {
   return handleChat({ conversationId: first.conversationId, role: q.role, message: q.followup });
 }
 
-async function score(q: Question, r: ChatResponse, expected: string[], judgeModel: string): Promise<Record<string, CheckResult>> {
+async function score(
+  q: Question,
+  r: ChatResponse,
+  expected: string[],
+  judgeModel: string,
+): Promise<Record<string, CheckResult>> {
   const called = r.toolCalls.map((t) => t.name);
   const checks: Record<string, CheckResult> = { tools: checkTools(q.expected_tools, called) };
   const clarified: CheckResult = {
@@ -126,7 +133,9 @@ async function main(): Promise<void> {
     return;
   }
 
-  console.log(`Running ${questions.length} evals · model=${process.env.ANTHROPIC_MODEL} effort=${process.env.ANTHROPIC_EFFORT ?? "medium"} judge=${judgeModel}\n`);
+  console.log(
+    `Running ${questions.length} evals · model=${process.env.ANTHROPIC_MODEL} effort=${process.env.ANTHROPIC_EFFORT ?? "medium"} judge=${judgeModel}\n`,
+  );
   const results: Result[] = [];
   for (const q of questions) {
     const expected = await expectedValues(q);
@@ -169,21 +178,36 @@ async function main(): Promise<void> {
       });
     }
     const last = results.at(-1)!;
-    const failed = Object.entries(last.checks).filter(([, c]) => !c.ok).map(([k, c]) => `${k}: ${c.detail}`);
+    const failed = Object.entries(last.checks)
+      .filter(([, c]) => !c.ok)
+      .map(([k, c]) => `${k}: ${c.detail}`);
     const why = last.error ? `error: ${last.error}` : failed.join("; ");
-    console.log(`${last.passed ? "PASS" : "FAIL"}  ${last.id.padEnd(32)} ${last.type.padEnd(10)} ${(last.latencyMs / 1000).toFixed(1)}s  ${why}`);
+    console.log(
+      `${last.passed ? "PASS" : "FAIL"}  ${last.id.padEnd(32)} ${last.type.padEnd(10)} ${(last.latencyMs / 1000).toFixed(1)}s  ${why}`,
+    );
   }
 
   const passed = results.filter((r) => r.passed).length;
   const tokensIn = results.reduce((s, r) => s + r.inputTokens, 0);
   const tokensOut = results.reduce((s, r) => s + r.outputTokens, 0);
-  console.log(`\n${passed}/${results.length} passed · ${tokensIn.toLocaleString()} input / ${tokensOut.toLocaleString()} output tokens (excl. judge)`);
+  console.log(
+    `\n${passed}/${results.length} passed · ${tokensIn.toLocaleString()} input / ${tokensOut.toLocaleString()} output tokens (excl. judge)`,
+  );
 
   mkdirSync(new URL("./results/", import.meta.url), { recursive: true });
   const file = new URL(`./results/${new Date().toISOString().replace(/[:.]/g, "-")}.json`, import.meta.url);
   writeFileSync(
     file,
-    JSON.stringify({ model: process.env.ANTHROPIC_MODEL, effort: process.env.ANTHROPIC_EFFORT, score: `${passed}/${results.length}`, results }, null, 2),
+    JSON.stringify(
+      {
+        model: process.env.ANTHROPIC_MODEL,
+        effort: process.env.ANTHROPIC_EFFORT,
+        score: `${passed}/${results.length}`,
+        results,
+      },
+      null,
+      2,
+    ),
   );
   console.log(`Saved ${file.pathname}`);
 }
