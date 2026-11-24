@@ -4,6 +4,9 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ChatResponse } from "@/agent/chat";
 
+/** Shows the "How I got this" panel (tool calls behind each answer). Set to false to hide it. */
+const SHOW_HOW_I_GOT_THIS = true;
+
 export function AssistantMessage({
   response,
   isLatest,
@@ -41,7 +44,7 @@ export function AssistantMessage({
         {response.outcome === "clarification" && <Pill tone="indigo">Asked to clarify</Pill>}
       </div>
 
-      {response.toolCalls.length > 0 && <HowIGotThis toolCalls={response.toolCalls} />}
+      {SHOW_HOW_I_GOT_THIS && response.toolCalls.length > 0 && <HowIGotThis toolCalls={response.toolCalls} />}
     </div>
   );
 }

@@ -2,11 +2,20 @@
 
 Ask plain-English questions about purchase orders. Claude answers by calling read-only database tools, never by writing SQL. **All data is fake.**
 
-<!-- GIF placeholder: record a short demo (role switch, an ambiguous supplier, "How I got this") and save it as docs/demo.gif -->
+<table>
+  <tr>
+    <td><img src="docs/images/slide-02.png" alt="Asking how many purchase orders are pending approval: a verified answer of 25, with the tool call shown under How I got this" width="280"></td>
+    <td><img src="docs/images/slide-04.png" alt="Asking for overdue payments for ABC: the assistant asks which of three ABC suppliers is meant instead of guessing" width="280"></td>
+    <td><img src="docs/images/slide-05.png" alt="A Warehouse user asking how much is owed to ABC Traders gets a polite refusal because the role can't see amounts" width="280"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Plain English, verified numbers</b></td>
+    <td align="center"><b>Asks instead of guessing</b></td>
+    <td align="center"><b>Warehouse can't see money</b></td>
+  </tr>
+</table>
 
-> 🎬 **Demo GIF coming soon.** Save it as `docs/demo.gif` and replace this line with `![Demo](docs/demo.gif)`.
-
-> **Latest eval: 20/20 passed** · `claude-opus-5-5`, effort `medium` · 2026-11-21 ([details](#evals))
+> **Latest eval: 20/20 passed** · `claude-opus-5-5`, effort `medium` · 2026-11-24 ([details](#evals))
 
 ## Why this exists
 
@@ -28,6 +37,10 @@ This repo is a small, complete example of those five things.
 - Clarifying questions with clickable options (e.g. the three ABC suppliers)
 - `/logs` page with recent traces: question, tools, latency, tokens, validation result
 - An eval suite of 20 questions, with expected answers computed by SQL
+
+<img src="docs/images/slide-03.png" alt="A follow-up question: after Pacific Rim is named as the supplier with the most late deliveries, asking how many of those were more than a week late returns a table of the late orders" width="360">
+
+_Follow-ups keep the context: "those" refers to the late deliveries from the previous answer._
 
 ## Architecture
 
@@ -106,6 +119,10 @@ If no candidate clears that rule, the result is ambiguous and the assistant must
 
 Treat validation as a strong guardrail, not proof.
 
+<img src="docs/images/slide-07.png" alt="The answer 'only 2 of these 6 were due this quarter; the other 4 were due earlier' passed validation, although 4 was the model's own subtraction" width="360">
+
+_The lesson came from a passing answer: "4" was the model's own math, and it passed only because a 4 appeared elsewhere in the data._
+
 **Other choices.**
 
 - **Money:** stored and summed as integer cents. It's converted to a decimal string only at the edges, using integer math.
@@ -162,7 +179,9 @@ npm run eval -- --model claude-sonnet-5-5 --effort low
 
 Results print as a table and are saved to `evals/results/<timestamp>.json`.
 
-**Latest run:** 20/20 on `claude-opus-5-5` (effort `medium`), 2026-11-21. It used 184k input tokens (most served from cache) and 4.8k output tokens, and each question took 2–10 seconds.
+**Latest run:** 20/20 on `claude-opus-5-5` (effort `medium`), 2026-11-24. It used 184k input tokens (most served from cache) and 4.7k output tokens, and each question took 2–12 seconds. An earlier run on 2026-11-21 also scored 20/20.
+
+<img src="docs/images/slide-06.png" alt="Terminal output of the eval run: all 20 questions PASS, 20/20 passed" width="360">
 
 ## Limitations and what I'd add next
 
